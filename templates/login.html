@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Вход в систему — NetAdmin</title>
+<style>
+  :root {
+    --dark-bg: #0F1B2B;
+    --light-bg: #FFFFFF;
+    --blue-accent: #3A8DFF;
+    --blue-muted: #5A7FCC; /* менее яркий синий для кнопки */
+    --text-light: #E6EFFF;
+    --input-bg: transparent;
+    --input-border: var(--blue-accent);
+    --input-focus-shadow: rgba(58, 141, 255, 0.5);
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: var(--dark-bg);
+    color: var(--text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 300;
+    user-select: none;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    text-align: center;
+  }
+
+  header {
+    font-weight: 300;
+    font-size: 2.2rem;
+    margin-bottom: 40px;
+    color: var(--light-bg);
+    user-select: none;
+  }
+
+  form {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    background-color: var(--input-bg);
+    border: 2.5px solid var(--input-border);
+    border-radius: 36px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    color: var(--text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    user-select: text;
+  }
+  input[type="text"]::placeholder,
+  input[type="password"]::placeholder {
+    color: #a0b9ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 300;
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus {
+    border-color: var(--blue-accent);
+    box-shadow: 0 0 8px var(--input-focus-shadow);
+  }
+
+  button {
+    padding: 12px 0;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 300;
+    color: var(--blue-muted);
+    background-color: transparent;
+    border: 2.5px solid var(--blue-muted);
+    border-radius: 36px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    user-select: none;
+    width: 100%;
+  }
+  button:hover,
+  button:focus {
+    background-color: var(--blue-muted);
+    color: var(--light-bg);
+    box-shadow: 0 8px 15px rgba(90, 127, 204, 0.6);
+    transform: translateY(-3px);
+    outline: none;
+  }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    -webkit-text-fill-color: var(--text-light) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+  .register-link {
+    margin-top: 12px;
+    font-weight: 300;
+    font-size: 1rem;
+    color: var(--blue-accent);
+    user-select: none;
+  }
+  .register-link a {
+    color: var(--blue-accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+  .register-link a:hover,
+  .register-link a:focus {
+    color: var(--text-light);
+    text-decoration: underline;
+    outline: none;
+  }
+
+  @media (max-width: 480px) {
+    form {
+      width: 90%;
+      max-width: 320px;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>Вход в систему</header>
+  <form method="POST" action="{{ url_for('login') }}" aria-label="Форма входа">
+    <input type="text" id="username" name="username" autocomplete="username" placeholder="Имя пользователя" required />
+    <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Пароль" required />
+    <button type="submit">Войти</button>
+    <div class="register-link">
+      Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>
+    </div>
+  </form>
+</body>
+</html>

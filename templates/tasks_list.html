@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+{% block title %}Список задач{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<style>
+    :root {
+        --input-height: 40px;
+        --input-radius: 8px;
+        --font: 'Segoe UI', sans-serif;
+        --filter-width: 140px; /* ширина стандартных фильтров */
+        --title-width: 140px; /* ширина поля Название задачи */
+        --grid-gap: 12px;
+    }
+
+    .task-filters {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: var(--grid-gap);
+        margin-bottom: 1.5rem;
+        align-items: center;
+    }
+
+    /* Поле Названия задачи уже и чуть короче */
+    .task-filters input[type="text"] {
+        width: var(--title-width);
+        height: var(--input-height);
+        padding: 0 12px;
+        border-radius: var(--input-radius);
+        border: 1px solid #3C3C3C;
+        background-color: var(--secondary-bg);
+        color: var(--text-color);
+        font-family: var(--font);
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+    .task-filters input[type="text"]:focus {
+        outline: none;
+        border-color: var(--accent-color, #1e90ff);
+    }
+
+    /* Все select одинаковые, шириной чуть шире */
+    .task-filters select {
+        width: var(--filter-width);
+        height: var(--input-height);
+        padding: 0 12px;
+        border-radius: var(--input-radius);
+        border: 1px solid #3C3C3C;
+        background-color: var(--secondary-bg);
+        color: var(--text-color);
+        font-family: var(--font);
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+    .task-filters select:focus {
+        outline: none;
+        border-color: var(--accent-color, #1e90ff);
+    }
+
+    /* Choices.js стилизация */
+    .choices__inner {
+        padding: 8px 12px !important;
+        border-radius: var(--input-radius) !important;
+        border: 1px solid #3C3C3C !important;
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-color) !important;
+        font-family: var(--font);
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        box-sizing: border-box;
+        min-height: var(--input-height);
+        max-width: var(--filter-width);
+    }
+
+    .choices[data-type*=select-one] {
+        width: var(--filter-width);
+        font-family: var(--font);
+    }
+
+    .choices__list--dropdown {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-color) !important;
+        border-radius: 0 0 var(--input-radius) var(--input-radius) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+    }
+
+    .choices__list .choices__item {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-color) !important;
+        border: none !important;
+        font-family: var(--font);
+        font-size: 14px;
+    }
+
+    .choices__list .choices__item:hover {
+        color: var(--accent-color) !important;
+    }
+
+    /* Кнопка фильтра */
+    .btn {
+        font-family: var(--font);
+        font-size: 14px;
+        padding: 0 16px;
+        height: var(--input-height);
+        border: none;
+        border-radius: var(--input-radius);
+        background-color: var(--accent-color, #1e90ff);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        min-width: 130px;
+        box-sizing: border-box;
+    }
+
+    .btn i {
+        font-size: 16px;
+    }
+
+    .btn:hover {
+        background-color: var(--accent-hover, #187bcd);
+    }
+
+    /* --------------------- */
+    /* Таблица в CSS Grid */
+    /* --------------------- */
+    .task-table {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1fr 1.3fr 1fr 0.8fr;
+        gap: 0;
+        border-radius: var(--input-radius);
+        overflow: hidden;
+        font-family: var(--font);
+        background-color: var(--secondary-bg);
+        color: var(--text-color);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        user-select: none;
+    }
+
+    .task-table thead {
+        display: contents;
+    }
+
+    .task-table tbody {
+        display: contents;
+    }
+
+    /* Заголовки */
+    .task-table thead tr {
+        display: contents;
+    }
+    .task-table thead th {
+        padding: 12px 10px;
+        background-color: var(--accent-color);
+        color: #fff;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: left;
+        border-bottom: 2px solid #1462c9;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .task-table thead th:last-child {
+        text-align: center;
+        cursor: default;
+    }
+
+    /* Строки */
+    .task-table tbody tr {
+        display: contents;
+    }
+
+    /* Ячейки */
+    .task-table tbody td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #444;
+        font-size: 14px;
+        vertical-align: middle;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-color);
+        background-color: var(--secondary-bg);
+    }
+
+    .task-table tbody td:last-child {
+        justify-content: center;
+    }
+
+    /* Иконки приоритета */
+    .fas.fa-flag.priority-low {
+        color: #32cd32; /* зеленый */
+    }
+    .fas.fa-flag.priority-medium {
+        color: #f0ad4e; /* желтый */
+    }
+    .fas.fa-flag.priority-high {
+        color: #d9534f; /* красный */
+    }
+
+    /* Иконки статуса */
+    .fas.fa-circle.status-new {
+        color: #007bff; /* синий */
+    }
+    .fas.fa-circle.status-in-progress {
+        color: #ffc107; /* оранжевый */
+    }
+    .fas.fa-circle.status-done {
+        color: #28a745; /* зеленый */
+    }
+
+    /* Ссылки редактирования и удаления */
+    .edit-btn, .delete-btn {
+        color: var(--accent-color);
+        font-size: 18px;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .edit-btn:hover {
+        color: var(--accent-hover);
+    }
+
+    .delete-btn {
+        color: #d9534f;
+        margin-left: 12px;
+    }
+
+    .delete-btn:hover {
+        color: #b52b27;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Список задач</h1>
+
+<form method="POST" class="task-filters">
+    <input type="text" name="title" placeholder="Название задачи" />
+
+    <select name="priority" id="priority-select">
+        <option value="all">Любой приоритет</option>
+        {% for p in priorities %}
+        <option value="{{ p }}">{{ p }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="difficulty" id="difficulty-select">
+        <option value="all">Любая сложность</option>
+        {% for d in difficulties %}
+        <option value="{{ d }}">{{ d }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="status" id="status-select">
+        <option value="all">Любой статус</option>
+        {% for s in statuses %}
+        <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="assigned_to" id="assigned-select">
+        <option value="all">Любой исполнитель</option>
+        {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn">
+        <i class="fas fa-filter"></i> Фильтровать
+    </button>
+</form>
+
+<table class="task-table" id="tasks-table" role="grid" aria-label="Таблица задач">
+    <thead>
+        <tr>
+            <th data-sort="title" scope="col" tabindex="0" aria-sort="none">Название</th>
+            <th data-sort="priority" scope="col" tabindex="0" aria-sort="none">Приоритет</th>
+            <th data-sort="difficulty" scope="col" tabindex="0" aria-sort="none">Сложность</th>
+            <th data-sort="status" scope="col" tabindex="0" aria-sort="none">Статус</th>
+            <th data-sort="assigned" scope="col" tabindex="0" aria-sort="none">Исполнитель</th>
+            <th data-sort="due_date" scope="col" tabindex="0" aria-sort="none">Срок</th>
+            <th scope="col">Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{ task.title }}</td>
+            <td>
+                <i class="fas fa-flag
+                    {% if task.priority == 'Низкий' %}priority-low
+                    {% elif task.priority == 'Средний' %}priority-medium
+                    {% else %}priority-high{% endif %}"></i>
+                {{ task.priority }}
+            </td>
+            <td>{{ task.difficulty }}</td>
+            <td>
+                <i class="fas fa-circle
+                    {% if task.status == 'Новое' %}status-new
+                    {% elif task.status == 'В работе' %}status-in-progress
+                    {% else %}status-done{% endif %}"></i>
+                {{ task.status }}
+            </td>
+            <td>{{ task.assigned_to.username if task.assigned_to else '—' }}</td>
+            <td>{{ task.due_date.strftime('%d.%m.%Y') if task.due_date else '—' }}</td>
+            <td>
+                <a href="{{ url_for('edit_task', task_id=task.id) }}" class="edit-btn" title="Редактировать">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <form method="POST" action="{{ url_for('delete_task', task_id=task.id) }}" style="display:inline;" onsubmit="return confirm('Удалить задачу «{{ task.title }}»?');">
+                    <button type="submit" class="delete-btn" title="Удалить" aria-label="Удалить задачу {{ task.title }}" style="background:none; border:none; cursor:pointer; padding:0;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const selects = ['priority-select', 'difficulty-select', 'status-select', 'assigned-select'];
+        selects.forEach(id => {
+            new Choices(`#${id}`, {
+                searchEnabled: false,
+                itemSelectText: '',
+                shouldSort: false
+            });
+        });
+
+        // Быстрая сортировка по столбцам
+        const table = document.getElementById('tasks-table');
+        const headers = table.querySelectorAll('th[data-sort]');
+        let sortDir = 1;
+        let currentSort = '';
+
+        headers.forEach(th => {
+            th.addEventListener('click', () => {
+                const sortKey = th.dataset.sort;
+                const rows = Array.from(table.tBodies[0].rows);
+                const colIndex = Array.from(th.parentNode.children).indexOf(th);
+
+                if (currentSort === sortKey) sortDir *= -1;
+                else sortDir = 1;
+                currentSort = sortKey;
+
+                rows.sort((a, b) => {
+                    const valA = a.cells[colIndex].textContent.trim();
+                    const valB = b.cells[colIndex].textContent.trim();
+                    return valA.localeCompare(valB, 'ru', { numeric: true }) * sortDir;
+                });
+
+                rows.forEach(row => table.tBodies[0].appendChild(row));
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}NetAdmin{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    {% block extra_css %}{% endblock %}
+    <style>
+    :root {
+        /* Тёмная тема по умолчанию — близко к стилю регистрации */
+        --primary-bg: #0F1B2B;         /* тёмный синий, как у регистрации */
+        --secondary-bg: #161F35;       /* чуть светлее вторичный фон */
+        --accent-color: #3A8DFF;       /* синий акцент */
+        --text-color: #E6EFFF;         /* светлый текст */
+        --hover-color: rgba(58, 141, 255, 0.2); /* лёгкий голубой hover */
+        --transition-speed: 0.3s;
+    }
+
+    [data-theme="light"] {
+        --primary-bg: #E6EBF8;         /* светлый фон, близко к #F5F7FA, но чуть контрастней */
+        --secondary-bg: #FFFFFF;       /* белый */
+        --accent-color: #1E40AF;       /* темно-синий акцент (инверсия синего) */
+        --text-color: #1A202C;         /* темный текст */
+        --hover-color: #C3D0FF;        /* светло-голубой hover */
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: var(--primary-bg);
+        color: var(--text-color);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        transition: background-color var(--transition-speed), color var(--transition-speed);
+        overflow-x: hidden;
+    }
+
+    .menu-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 70px;
+        background: var(--secondary-bg);
+        transition: width 0.3s ease, background-color var(--transition-speed);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+        z-index: 1000;
+    }
+
+    [data-theme="light"] .menu-container {
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-container:hover {
+        width: 200px;
+    }
+
+    .menu-header {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 2px solid var(--accent-color);
+        font-weight: bold;
+        font-size: 24px;
+        color: var(--accent-color);
+        letter-spacing: 2px;
+        user-select: none;
+    }
+
+    .menu-header span {
+        color: var(--text-color);
+        margin-left: 5px;
+        font-weight: normal;
+    }
+
+    .menu-items {
+        display: flex;
+        flex-direction: column;
+        margin-top: 20px;
+        height: calc(100vh - 60px);
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        color: var(--text-color);
+        text-decoration: none;
+        transition: background-color var(--transition-speed), color var(--transition-speed);
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+        border-radius: 4px;
+    }
+
+    .menu-item i {
+        font-size: 20px;
+        min-width: 25px;
+        text-align: center;
+        margin-right: 15px;
+        transition: color var(--transition-speed), transform 0.3s ease;
+    }
+
+    .menu-item:hover {
+        background: var(--hover-color);
+        color: var(--accent-color);
+    }
+
+    .menu-item:hover i {
+        color: var(--accent-color);
+        transform: scale(1.2);
+    }
+
+    .menu-container:hover .menu-item span {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+    }
+
+    .menu-item span {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .main-content {
+        margin-left: 70px;
+        padding: 20px;
+        min-height: 100vh;
+        transition: margin-left 0.3s ease, background-color var(--transition-speed), color var(--transition-speed);
+        background: var(--primary-bg);
+    }
+
+    .menu-container:hover ~ .main-content {
+        margin-left: 200px;
+    }
+
+    /* Кнопка смены темы */
+    #theme-toggle {
+    all: unset; /* Сброс всех браузерных стилей кнопки */
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    color: var(--text-color);
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: 4px;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+#theme-toggle i {
+    margin-right: 15px;
+    font-size: 20px;
+    min-width: 25px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+#theme-toggle:hover {
+    background: var(--hover-color);
+    color: var(--accent-color);
+}
+
+#theme-toggle:hover i {
+    transform: scale(1.2);
+    color: var(--accent-color);
+}
+
+
+    /* Активный пункт меню */
+    .menu-item.active {
+        background: var(--accent-color);
+        color: var(--secondary-bg);
+    }
+    .menu-item.active i {
+        color: var(--secondary-bg);
+        transform: none;
+    }
+    /* Активный пункт при свёрнутом меню */
+    .menu-container:not(:hover) .menu-item.active span {
+        opacity: 0;
+    }
+</style>
+
+</head>
+<body>
+    <nav class="menu-container" aria-label="Основное меню">
+        <div class="menu-header">
+            Net
+        </div>
+
+        <div class="menu-items">
+            <button id="theme-toggle" aria-label="Переключить тему">
+                <i class="fas fa-moon" id="theme-icon"></i>
+                <span>Сменить тему</span>
+            </button>
+            <a href="{{ url_for('dashboard') }}" class="menu-item" aria-current="{{ 'page' if request.endpoint == 'dashboard' else false }}">
+                <i class="fas fa-desktop"></i>
+                <span>Главная</span>
+            </a>
+            <a href="{{ url_for('tasks_list') }}" class="menu-item" aria-current="{{ 'page' if request.endpoint == 'tasks' else false }}">
+                <i class="fas fa-tasks"></i>
+                <span>Задачи</span>
+            </a>
+            <a href="{{ url_for('task_board') }}" class="menu-item" aria-current="{{ 'page' if request.endpoint == 'task_board' else false }}">
+                <i class="fas fa-columns"></i>
+                <span>Доска</span>
+            </a>
+
+            <a href="{{ url_for('create_task') }}" class="menu-item" aria-current="{{ 'page' if request.endpoint == 'create_task' else false }}">
+                <i class="fas fa-plus-circle"></i>
+                <span>Создать задачу</span>
+            </a>
+
+        </div>
+    </nav>
+
+    <main class="main-content" role="main">
+        {% block header %}{% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Подсветка активного пункта меню
+            const currentEndpoint = "{{ request.endpoint }}";
+            document.querySelectorAll('.menu-item').forEach(item => {
+                const href = item.getAttribute('href');
+                if (!href) return;
+                // Пытаемся определить активную ссылку по URL или endpoint
+                if (href === window.location.pathname || item.getAttribute('aria-current') === 'page') {
+                    item.classList.add('active');
+                }
+            });
+
+            // Тема из localStorage
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+
+            document.getElementById('theme-toggle').addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+            });
+
+            function updateThemeIcon(theme) {
+                const icon = document.getElementById('theme-icon');
+                if (theme === 'dark') {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                } else {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

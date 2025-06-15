@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Добро пожаловать в NetAdmin</title>
+  <style>
+    :root {
+      --dark-bg: #0F1B2B;
+      --light-bg: #FFFFFF;
+      --blue-accent: #3A8DFF;
+      --text-light: #E6EFFF;
+      --button-bg: transparent;
+      --button-border: var(--blue-accent);
+      --button-hover-bg: var(--blue-accent);
+      --button-hover-color: var(--light-bg);
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: var(--dark-bg);
+      color: var(--text-light);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    header {
+      font-weight: 300;
+      font-size: 3rem;
+      letter-spacing: 0.12em;
+      color: var(--light-bg);
+      width: 100%;
+      max-width: 600px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+    header span {
+      color: var(--blue-accent);
+      text-shadow: 0 0 8px rgba(58, 141, 255, 0.7);
+    }
+
+    main {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 300px;
+    }
+    a.button {
+      display: inline-block;
+      padding: 16px 0;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: var(--button-border);
+      border: 2.5px solid var(--button-border);
+      border-radius: 36px;
+      background-color: var(--button-bg);
+      text-decoration: none;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+      text-align: center;
+      box-shadow: 0 0 0 transparent;
+      user-select: none;
+      width: 100%;
+      cursor: pointer;
+    }
+    a.button:hover,
+    a.button:focus {
+      background-color: var(--button-hover-bg);
+      color: var(--button-hover-color);
+      transform: translateY(-6px);
+      box-shadow: 0 12px 20px rgba(58, 141, 255, 0.5);
+      outline: none;
+    }
+
+    footer {
+      font-size: 0.9rem;
+      color: #5F7AB8;
+      user-select: none;
+      text-shadow: 0 0 3px rgba(58, 141, 255, 0.4);
+      font-weight: 300;
+      margin-top: 8px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .description {
+      font-weight: 300;
+      font-size: 1.05rem;
+      color: #9bbcff;
+      margin: 12px 0 0;
+      max-width: 600px;
+      line-height: 1.4;
+      text-shadow: 0 0 5px rgba(58, 141, 255, 0.3);
+      user-select: none;
+    }
+
+    @media (max-width: 480px) {
+      header {
+        font-size: 2.2rem;
+      }
+      .btn-group {
+        width: 100%;
+        max-width: 280px;
+      }
+      a.button {
+        padding: 14px 0;
+      }
+      .description {
+        max-width: 90%;
+        font-size: 1rem;
+      }
+      footer {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Добро пожаловать в <span>NetAdmin</span>
+  </header>
+
+  <main>
+    <div class="btn-group" role="group" aria-label="Навигация">
+      <a href="{{ url_for('login') }}" class="button" tabindex="1">Войти</a>
+      <a href="{{ url_for('register') }}" class="button" tabindex="2">Регистрация</a>
+    </div>
+  </main>
+
+  <section>
+    <p class="description">
+      NetAdmin — современный инструмент для системных администраторов, который поможет управлять устройствами и задачами в вашей сети с лёгкостью и скоростью.
+    </p>
+    <footer>
+      © 2025 NetAdmin — современное системное администрирование
+    </footer>
+  </section>
+</body>
+</html>

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Устройство {{ device.ip }} - NetAdmin{% endblock %}
+
+{% block header %}
+<h1 style="color: var(--accent-color);">Информация об устройстве {{ device.ip }}</h1>
+{% endblock %}
+
+{% block content %}
+<div class="device-detail-container">
+    <div class="device-card">
+        <h2>Основная информация</h2>
+        <ul class="device-info-list">
+            <li><strong>IP-адрес:</strong> {{ device.ip }}</li>
+            <li><strong>Имя устройства:</strong> {{ device.hostname or 'Неизвестно' }}</li>
+            <li><strong>Статус:</strong>
+                {% if device.alive %}
+                    <span class="status available">Доступен</span>
+                {% else %}
+                    <span class="status unavailable">Недоступен</span>
+                {% endif %}
+            </li>
+        </ul>
+
+        <h2>Открытые порты</h2>
+        {% if device.open_ports %}
+            <ul class="ports-list">
+                {% for port in device.open_ports %}
+                    <li>Порт {{ port }} открыт</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-ports">Нет открытых портов или устройство недоступно.</p>
+        {% endif %}
+
+        <a href="{{ url_for('dashboard') }}" class="back-link">← Назад к дашборду</a>
+    </div>
+</div>
+
+<style>
+.device-detail-container {
+    padding: 20px;
+    font-family: 'Century Gothic', sans-serif;
+}
+
+.device-card {
+    background-color: var(--secondary-bg);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    color: var(--text-color);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.device-card h2 {
+    color: var(--accent-color);
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+}
+
+.device-info-list, .ports-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 20px;
+}
+
+.device-info-list li, .ports-list li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.status.available {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.status.unavailable {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.no-ports {
+    color: var(--muted-text-color, #aaa);
+    font-style: italic;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 16px;
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #d94f4f;
+    text-decoration: underline;
+}
+</style>
+{% endblock %}

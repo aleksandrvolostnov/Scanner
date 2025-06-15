@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд - NetAdmin{% endblock %}
+
+{% block header %}
+<h1 style="color: var(--accent-color);">Сеть: {{ network }}</h1>
+{% endblock %}
+
+{% block content %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<div class="dashboard-container">
+
+    {% if devices %}
+        <h2>Список устройств</h2>
+        <table class="devices-table">
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>IP</th>
+                    <th>MAC</th>
+                    <th>Производитель</th>
+                    <th>Статус</th>
+                    <th>ОС</th>
+                    <th>Порты</th>
+                    <th>HTTP</th>
+                    <th>SSDP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td>{{ device.hostname }}</td>
+                    <td>
+                        <a href="{{ url_for('device_detail', ip=device.ip) }}" class="device-link">
+                            {{ device.ip }}
+                        </a>
+                    </td>
+                    <td>{{ device.mac }}</td>
+                    <td><div class="vendor-cell" title="{{ device.vendor }}">{{ device.vendor }}</div></td>
+                    <td>
+                        <div class="icon-text">
+                            {% if device.status == 'online' %}
+                                <i class="fas fa-circle status-icon online" title="Онлайн"></i>
+                            {% elif device.status == 'offline' %}
+                                <i class="fas fa-circle status-icon offline" title="Оффлайн"></i>
+                            {% else %}
+                                <i class="fas fa-circle status-icon unknown" title="Неизвестно"></i>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="icon-text">
+                            {% if 'Windows' in device.os %}
+                                <i class="fab fa-windows os-fa windows" title="Windows"></i>
+                            {% elif 'Linux' in device.os %}
+                                <i class="fab fa-linux os-fa linux" title="Linux"></i>
+                            {% elif 'Android' in device.os %}
+                                <i class="fab fa-android os-fa android" title="Android"></i>
+                            {% elif 'Apple' in device.os or 'macOS' in device.os %}
+                                <i class="fab fa-apple os-fa apple" title="Apple"></i>
+                            {% else %}
+                                <i class="fas fa-question-circle os-fa unknown" title="Неизвестно"></i>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if device.open_ports %}
+                            <i class="fas fa-lock-open text-green" title="{{ device.open_ports | join(', ') }}"></i>
+                        {% else %}
+                            <i class="fas fa-ban text-gray" title="Нет открытых портов"></i>
+                        {% endif %}
+                    {{ device.open_ports | join(', ') if device.open_ports else '' }}
+                    </td>
+                    <td>{{ device.http_info or '—' }}</td>
+                    <td>{{ device.ssdp_info or '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h2>Аналитика сети</h2>
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h3>Операционные системы</h3>
+                <canvas id="osChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Производители</h3>
+                <canvas id="vendorChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Угрозы</h3>
+                <canvas id="threatChart"></canvas>
+            </div>
+        </div>
+    {% else %}
+        <p>Устройства в сети не найдены.</p>
+    {% endif %}
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const osStats = {{ os_stats | tojson }};
+    const vendorStats = {{ vendor_stats | tojson }};
+    const threatStats = {{ threat_stats | tojson }};
+
+    function getCssVariable(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    const textColor = getCssVariable('--text-color');
+    const accentColor = getCssVariable('--accent-color');
+    const secondaryBg = getCssVariable('--secondary-bg');
+    const hoverColor = getCssVariable('--hover-color');
+
+    const coldPastelPalette = [
+        'rgba(163,191,250,0.8)', 'rgba(178,235,242,0.8)', 'rgba(179,205,224,0.8)', 'rgba(195,240,202,0.8)',
+        'rgba(178,223,219,0.8)', 'rgba(209,196,233,0.8)', 'rgba(187,222,251,0.8)', 'rgba(174,217,224,0.8)',
+        'rgba(197,202,233,0.8)', 'rgba(224,247,250,0.8)', 'rgba(220,232,242,0.8)', 'rgba(179,229,252,0.8)'
+    ];
+
+    const neutralPalette = [
+        'rgba(144,164,174,0.8)', 'rgba(176,190,197,0.8)', 'rgba(207,216,220,0.8)'
+    ];
+
+    new Chart(document.getElementById("osChart"), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(osStats),
+            datasets: [{
+                data: Object.values(osStats),
+                backgroundColor: coldPastelPalette,
+                borderColor: secondaryBg,
+                borderWidth: 1.5,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: textColor,
+                        font: { weight: '600', size: 14 }
+                    }
+                },
+                tooltip: {
+                    bodyColor: textColor,
+                    titleColor: accentColor,
+                    backgroundColor: secondaryBg
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("vendorChart"), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(vendorStats),
+            datasets: [{
+                label: 'Устройств',
+                data: Object.values(vendorStats),
+                backgroundColor: coldPastelPalette,
+                borderRadius: 6,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    bodyColor: textColor,
+                    titleColor: accentColor,
+                    backgroundColor: secondaryBg
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: { color: hoverColor },
+                    ticks: { color: textColor }
+                },
+                y: {
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            const maxLength = 15;
+                            return value.length > maxLength ? value.substring(0, maxLength - 1) + '…' : value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("threatChart"), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(threatStats),
+            datasets: [{
+                data: Object.values(threatStats),
+                backgroundColor: neutralPalette,
+                borderColor: secondaryBg,
+                borderWidth: 1.5,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: textColor,
+                        font: { weight: '600', size: 14 }
+                    }
+                },
+                tooltip: {
+                    bodyColor: textColor,
+                    titleColor: accentColor,
+                    backgroundColor: secondaryBg
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+.dashboard-container {
+    padding: 20px;
+    font-family: 'Century Gothic', sans-serif;
+}
+
+.charts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.chart-box {
+    flex: 1 1 300px;
+    min-width: 260px;
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0.5px rgba(255,255,255,0.05), 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.chart-box:hover {
+    transform: translateY(-3px);
+}
+.chart-box canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 300px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    border-radius: 6px;
+}
+
+.devices-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-color);
+    margin-top: 20px;
+}
+.devices-table th, .devices-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--hover-color);
+    text-align: left;
+}
+.devices-table th {
+    background-color: var(--secondary-bg);
+    color: var(--accent-color);
+    font-weight: 600;
+}
+.devices-table tr:hover {
+    background-color: var(--hover-color);
+    cursor: pointer;
+}
+
+.device-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+.device-link:hover {
+    color: #d94f4f;
+    text-decoration: underline;
+}
+
+.vendor-cell {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.icon-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-icon {
+    font-size: 0.85rem;
+}
+.status-icon.online { color: #4caf50; }
+.status-icon.offline { color: #f44336; }
+.status-icon.unknown { color: blue; }
+
+.os-fa {
+    font-size: 1rem;
+}
+.os-fa.windows { color: #2196f3; }
+.os-fa.linux { color: #ff9800; }
+.os-fa.apple { color: #9c27b0; }
+.os-fa.android { color: #4caf50; }
+.os-fa.unknown { color: #b0bec5; }
+
+.text-green { color: #4caf50; }
+.text-gray { color: #9e9e9e; }
+</style>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Редактировать задачу{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<style>
+    :root {
+        --input-height: 40px;
+        --input-radius: 8px;
+        --font: 'Segoe UI', sans-serif;
+        --input-width: 300px;
+        --textarea-height: 100px;
+    }
+
+    form.task-form {
+        max-width: 600px;
+        margin: 1rem auto;
+        font-family: var(--font);
+        color: var(--text-color);
+    }
+
+    form.task-form label {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    form.task-form input[type="text"],
+    form.task-form input[type="date"],
+    form.task-form textarea,
+    form.task-form select {
+        width: var(--input-width);
+        height: var(--input-height);
+        padding: 8px 12px;
+        border-radius: var(--input-radius);
+        border: 1px solid #3C3C3C;
+        background-color: var(--secondary-bg);
+        color: var(--text-color);
+        font-family: var(--font);
+        font-size: 14px;
+        box-sizing: border-box;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: border-color 0.3s ease;
+        resize: vertical;
+    }
+
+    form.task-form textarea {
+        height: var(--textarea-height);
+    }
+
+    form.task-form input[type="text"]:focus,
+    form.task-form input[type="date"]:focus,
+    form.task-form textarea:focus,
+    form.task-form select:focus {
+        outline: none;
+        border-color: var(--accent-color, #1e90ff);
+    }
+
+    /* Choices.js */
+    .choices__inner {
+        padding: 8px 12px !important;
+        border-radius: var(--input-radius) !important;
+        border: 1px solid #3C3C3C !important;
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-color) !important;
+        font-family: var(--font);
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        box-sizing: border-box;
+        min-height: var(--input-height);
+        max-width: var(--input-width);
+    }
+
+    .choices[data-type*=select-one] {
+        width: var(--input-width);
+        font-family: var(--font);
+    }
+
+    .choices__list--dropdown {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-color) !important;
+        border-radius: 0 0 var(--input-radius) var(--input-radius) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+    }
+
+    /* Цвет плейсхолдера в Choices.js */
+    .choices__inner .choices__item--placeholder {
+        color: #1e90ff !important;
+        font-weight: 600;
+    }
+
+    /* Кнопка */
+    button.btn {
+        font-family: var(--font);
+        font-size: 14px;
+        padding: 0 24px;
+        height: var(--input-height);
+        border: none;
+        border-radius: var(--input-radius);
+        background-color: var(--accent-color, #1e90ff);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        margin-top: 1.2rem;
+        box-sizing: border-box;
+    }
+    button.btn i {
+        font-size: 16px;
+    }
+    button.btn:hover {
+        background-color: var(--accent-hover, #187bcd);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Редактировать задачу</h1>
+
+<form method="POST" class="task-form" novalidate>
+    <label for="title">Название задачи *</label>
+    <input type="text" id="title" name="title" placeholder="Введите название" required value="{{ task.title }}" />
+
+    <label for="description">Описание</label>
+    <textarea id="description" name="description" placeholder="Подробное описание задачи...">{{ task.description or '' }}</textarea>
+
+    <label for="priority-select">Приоритет *</label>
+    <select name="priority" id="priority-select" required>
+        <option value="" disabled>Выберите приоритет</option>
+        {% for p in priorities %}
+        <option value="{{ p }}" {% if p == task.priority %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="status-select">Статус *</label>
+    <select name="status" id="status-select" required>
+        <option value="" disabled>Выберите статус</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == task.status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="difficulty-select">Сложность *</label>
+    <select name="difficulty" id="difficulty-select" required>
+        <option value="" disabled>Выберите сложность</option>
+        {% for d in difficulties %}
+        <option value="{{ d }}" {% if d == task.difficulty %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="due_date">Срок выполнения *</label>
+    <input type="date" id="due_date" name="due_date" required
+        value="{{ task.due_date.strftime('%Y-%m-%d') if task.due_date else '' }}" />
+
+    <label for="assigned-select">Исполнитель</label>
+    <select name="assigned_to" id="assigned-select">
+        <option value="" {% if not task.assigned_to_id %}selected{% endif %}>Не назначено</option>
+        {% for user in users %}
+        <option value="{{ user.id }}" {% if user.id == task.assigned_to_id %}selected{% endif %}>{{ user.username }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn">
+        <i class="fas fa-save"></i> Сохранить
+    </button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        ['priority-select', 'status-select', 'difficulty-select', 'assigned-select'].forEach(id => {
+            new Choices(`#${id}`, {
+                searchEnabled: false,
+                itemSelectText: '',
+                shouldSort: false,
+                placeholder: true,
+                placeholderValue: document.querySelector(`#${id} option[disabled]`)?.textContent || ''
+            });
+        });
+    });
+</script>
+{% endblock %}
